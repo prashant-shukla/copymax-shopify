@@ -1,0 +1,46 @@
+<!-- Bulk Jobs Section -->
+<div id="bulk-jobs-section" class="bulk-jobs">
+<h3>Bulk Jobs</h3>
+<div id="job-rows">
+    <!-- Initial Job Row (Non-Removable) -->
+    <div class="job-row default-row">
+    <input type="text" name="job_name[]" placeholder="Job Name/PO# (Required)" required>
+    <input type="number" name="job_qty[]" min="1" value="1" required oninput="updatePrice(this)">
+    <span class="price" data-price="{{ product.selected_or_first_available_variant.price | money_without_currency }}">$<span class="job-price">{{ product.selected_or_first_available_variant.price | money_without_currency }}</span></span>
+    <button type="button" class="remove-job" disabled style="opacity: 0.5; cursor: not-allowed;">&#128465;</button>
+    </div>
+</div>
+
+<div class="job-controls">
+    <label>Total Jobs:</label>
+    <input type="number" id="total-jobs" value="1" min="1" readonly>
+    <button type="button" id="add-job-btn">+ Add Job</button>
+</div>
+
+<div class="turnaround">
+    <h4>Turnaround</h4>
+    <label>
+    <input type="radio" name="turnaround" value="next-day" checked>
+    Next Day <span class="cutoff">(Cut-off time 4pm PST)</span>
+    </label>
+</div>
+
+<div class="shipping">
+    <h4>Shipping</h4>
+    <label>
+    <input type="radio" name="shipping" value="blind-drop-ship">
+    Blind Drop Ship
+    </label>
+    <label>
+    <input type="radio" name="shipping" value="store-pickup">
+    Store Pickup <span class="facility">(CA Facility Only)</span>
+    </label>
+</div>
+
+<div class="totals">
+    <p>Subtotal: $<span id="subtotal">{{ product.selected_or_first_available_variant.price | money_without_currency }}</span></p>
+    <p>Total: $<span id="total">{{ product.selected_or_first_available_variant.price | money_without_currency }}</span></p>
+</div>
+
+<button type="button" class="add-to-cart-btn">Add to Cart</button>
+</div>

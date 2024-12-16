@@ -1,0 +1,171 @@
+{% comment %}
+  Renders product variant-picker
+
+  Accepts:
+  - product: {Object} product object.
+  - block: {Object} passing the block information.
+  - product_form_id: {String} Id of the product form to which the variant picker is associated.
+  Usage:
+  {% render 'product-variant-picker', product: product, block: block, product_form_id: product_form_id %}
+{% endcomment %}
+
+<style>
+  .product-form__input--tab {
+    display: flex;
+    gap: 10px;
+  }
+
+  /* Target only labels within the .product-form__input--tab class */
+  .product-form__input--tab input[type="radio"] + label {
+    display: inline-block;
+    padding: 10px 20px;
+    border: 1px solid #ccc;
+    border-radius: 5px; /* Apply the desired border radius */
+    cursor: pointer;
+    background-color: #f5f5f5;
+    transition: background-color 0.3s ease, border-color 0.3s ease;
+    text-align: center;
+    min-width: 50px;
+    flex: 1;
+  }
+
+  .product-form__input--tab input[type="radio"] {
+    display: none; /* Hide the radio input */
+  }
+
+  .product-form__input--tab input[type="radio"]:checked + label {
+    background-color: #007aff;
+    color: #fff;
+    border-color: #007aff;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  }
+
+  .product-form__input--tab input[type="radio"] + label:hover {
+    background-color: #e6e6e6;
+    border-color: #999;
+  }
+</style>
+
+
+{%- unless product.has_only_default_variant -%}
+  <variant-selects
+    id="variant-selects-{{ section.id }}"
+    data-section="{{ section.id }}"
+    {{ block.shopify_attributes }}
+    class="bulk-job-options"
+  >
+    {%- for option in product.options_with_values -%}
+      {%- liquid
+        assign swatch_count = option.values | map: 'swatch' | compact | size
+        assign picker_type = block.settings.picker_type
+
+        if swatch_count > 0 and block.settings.swatch_shape != 'none'
+          if block.settings.picker_type == 'dropdown'
+            assign picker_type = 'swatch_dropdown'
+          else
+            assign picker_type = 'swatch'
+          endif
+        endif
+
+        # Check if the current option should be rendered as tab-style radio buttons
+        assign is_tab_style_radio = false
+        if option.name == 'Type' or block.settings.render_as_tabs
+          assign is_tab_style_radio = true
+          assign picker_type = 'button'
+        endif
+      -%}
+
+      {%- if is_tab_style_radio -%}
+        <fieldset class="js product-form__input product-form__input--pill product-form__input--tab">
+          <legend class="form__label">{{ option.name }}</legend>
+          {% render 'product-variant-options',
+            product: product,
+            option: option,
+            block: block,
+            picker_type: 'button'
+          %}
+        </fieldset>
+      {%- elsif picker_type == 'swatch' -%}
+        <fieldset class="js product-form__input product-form__input--swatch">
+          <legend class="form__label">
+            {{ option.name }}:
+            <span data-selected-value>
+              {{- option.selected_value -}}
+            </span>
+          </legend>
+          {% render 'product-variant-options',
+            product: product,
+            option: option,
+            block: block,
+            picker_type: picker_type
+          %}
+        </fieldset>
+      {%- else -%}
+        <div class="product-form__input product-form__input--dropdown">
+          <label class="form__label" for="Option-{{ section.id }}-{{ forloop.index0 }}">
+            {{ option.name }}
+          </label>
+          <div class="select">
+            {%- if picker_type == 'swatch_dropdown' -%}
+              <span
+                data-selected-value
+                class="dropdown-swatch"
+              >
+                {% render 'swatch', swatch: option.selected_value.swatch, shape: block.settings.swatch_shape %}
+              </span>
+            {%- endif -%}
+            <select
+              id="Option-{{ section.id }}-{{ forloop.index0 }}"
+              class="select__select"
+              name="options[{{ option.name | escape }}]"
+              form="{{ product_form_id }}"
+            >
+              {% render 'product-variant-options',
+                product: product,
+                option: option,
+                block: block,
+                picker_type: picker_type
+              %}
+            </select>
+            <span class="svg-wrapper">
+              {{- 'icon-caret.svg' | inline_asset_content -}}
+            </span>
+          </div>
+        </div>
+      {%- endif -%}
+    {%- endfor -%}
+
+    <ul class="hidden">
+      {% for tag in product.tags %}
+        <li>{{ tag }}</li>
+      {% endfor %}
+    </ul>
+    
+    {% comment %} Add the conditional dropdown if product has the "Insert" tag  {% endcomment %}
+    {%- if product.tags contains 'Insert' -%}
+      <div class="product-form__input product-form__input--dropdown">
+        <label class="form__label" for="Insert-Option-{{ section.id }}">
+          Insert
+        </label>
+        <div class="select">
+          <select
+            id="Insert-Option-{{ section.id }}"
+            class="select__select"
+            name="properties[Insert]" {# Using properties[] ensures this custom option is passed with the cart item #}
+            form="{{ product_form_id }}"
+          >
+            <option value="UV Printed Fabric">UV Printed Fabric</option>
+            <option value="UV Printed Matt Banner">UV Printed Matt Banner</option>
+          </select>
+          <span class="svg-wrapper">
+            {{- 'icon-caret.svg' | inline_asset_content -}}
+          </span>
+        </div>
+      </div>
+    {%- endif -%}
+
+    <script type="application/json" data-selected-variant>
+      {{ product.selected_or_first_available_variant | json }}
+    </script>
+  </variant-selects>
+{%- endunless -%}
