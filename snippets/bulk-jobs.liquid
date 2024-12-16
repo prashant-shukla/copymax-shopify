@@ -17,7 +17,7 @@
     <button type="button" id="add-job-btn">+ Add Job</button>
 </div>
 
-<div class="turnaround">
+<div class="turnaround hidden">
     <h4>Turnaround</h4>
     <label>
     <input type="radio" name="turnaround" value="next-day" checked>
@@ -25,7 +25,7 @@
     </label>
 </div>
 
-<div class="shipping">
+<div class="shipping hidden">
     <h4>Shipping</h4>
     <label>
     <input type="radio" name="shipping" value="blind-drop-ship">
@@ -42,5 +42,5 @@
     <p>Total: $<span id="total">{{ product.selected_or_first_available_variant.price | money_without_currency }}</span></p>
 </div>
 
-<button type="button" class="add-to-cart-btn">Add to Cart</button>
+<button type="button" class="product-form__submit button button--full-width button--secondary">Add to Cart</button>
 </div>

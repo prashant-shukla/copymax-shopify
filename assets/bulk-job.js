@@ -125,4 +125,109 @@ document.addEventListener("DOMContentLoaded", function () {
 
     // Call initialize when the page is loaded
     initialize();
+
+
+
+
+
+
+
+    document.querySelector(".add-to-cart-btn").addEventListener("click", function () {
+        console.log("Add to Cart clicked");
+    
+        const variantId = getSelectedVariantId();
+        const jobRows = document.querySelectorAll(".job-row");
+    
+        let totalQty = 0;
+        let properties = {};
+    
+        jobRows.forEach((row, index) => {
+            const jobName = row.querySelector("input[name='job_name[]']").value;
+            const jobQty = parseInt(row.querySelector("input[name='job_qty[]']").value) || 1;
+    
+            totalQty += jobQty;
+    
+            // properties[`Job #${index + 1} Title`] = jobName;
+            // properties[`Job #${index + 1} Qty`] = jobQty;
+            properties[`Job #${index + 1}`] = jobName + ' X ' + jobQty;
+        });
+    
+        // Handle dynamic Insert dropdown
+        const insertDropdown = document.querySelector("[id^='Insert-Option-']"); // Match ID starting with 'Insert-Option-'
+        if (insertDropdown) {
+            const insertValue = insertDropdown.value;
+            console.log("Insert Value:", insertValue);
+            if (insertValue) {
+                properties["Insert"] = insertValue;
+            }
+        } else {
+            console.warn("Insert dropdown not found");
+        }
+
+        // Handle dynamic Graphic dropdown
+        const graphicDropdown = document.querySelector("[id^='Graphic-Option-']"); // Match ID starting with 'Graphic-Option-'
+        if (graphicDropdown) {
+            const graphicValue = graphicDropdown.value;
+            console.log("Graphic Value:", graphicValue);
+            if (graphicValue) {
+                properties["Graphic"] = graphicValue;
+            }
+        } else {
+            console.warn("Graphic dropdown not found");
+        }
+
+        const variantPrice = getCurrentVariantPrice();
+        const totalPrice = (variantPrice * totalQty).toFixed(2);
+    
+        console.log("Total quantity:", totalQty);
+        console.log("Properties:", properties);
+    
+        const payload = {
+            id: variantId,
+            quantity: totalQty,
+            properties: properties,
+        };
+    
+        console.log("Payload to Shopify:", payload);
+    
+        fetch("/cart/add.js", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+            },
+            body: JSON.stringify(payload),
+        })
+            .then((response) => {
+                if (response.ok) {
+                    return response.json();
+                } else {
+                    throw new Error("Failed to add to cart");
+                }
+            })
+            .then((data) => {
+                console.log("Added to cart successfully:", data);
+                // alert("Jobs added to cart successfully!");
+                window.location.href = "/cart";
+            })
+            .catch((error) => {
+                console.error("Error adding to cart:", error);
+                alert("Failed to add jobs to cart. Please try again.");
+            });
+    });
+        
+    // Helper function to get the currently selected variant ID
+    function getSelectedVariantId() {
+        const selectedVariantElement = document.querySelector('script[data-selected-variant]');
+        const variantData = JSON.parse(selectedVariantElement.textContent);
+        return variantData.id; // Returns the selected variant ID
+    }
+    
+    // Helper function to get the current variant price
+    function getCurrentVariantPrice() {
+        const selectedVariantElement = document.querySelector('script[data-selected-variant]');
+        const variantData = JSON.parse(selectedVariantElement.textContent);
+        return parseFloat(variantData.price / 100); // Convert price to dollars
+    }
+    
+
 });

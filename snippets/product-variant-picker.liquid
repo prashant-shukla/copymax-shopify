@@ -164,6 +164,29 @@
       </div>
     {%- endif -%}
 
+
+    {%- if product.tags contains 'Graphic' -%}
+      <div class="product-form__input product-form__input--dropdown">
+        <label class="form__label" for="Graphic-Option-{{ section.id }}">
+          Graphic
+        </label>
+        <div class="select">
+          <select
+            id="Graphic-Option-{{ section.id }}"
+            class="select__select"
+            name="properties[Graphic]" {# Using properties[] ensures this custom option is passed with the cart item #}
+            form="{{ product_form_id }}"
+          >
+            <option value="Single Sided">Single Sided</option>
+            <option value="Double Sided">Double Sided</option>
+          </select>
+          <span class="svg-wrapper">
+            {{- 'icon-caret.svg' | inline_asset_content -}}
+          </span>
+        </div>
+      </div>
+    {%- endif -%}
+
     <script type="application/json" data-selected-variant>
       {{ product.selected_or_first_available_variant | json }}
     </script>
